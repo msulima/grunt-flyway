@@ -8,6 +8,8 @@
 
 'use strict';
 
+var buildCommandParameters = require('../src/buildCommandParameters');
+
 module.exports = function(grunt) {
 
     var ChildProcess = require('child_process'),
@@ -157,60 +159,19 @@ module.exports = function(grunt) {
 
         }
 
-        // For each Flyway options associated to the Flyway Command which have been entered
+        // Check if all required options are passed
         for (option in commandOptions) {
 
-            // If the entered option is available and supported by the Grunt Flyway plugin
-            if (options.hasOwnProperty(option)) {
-
-                // Checks if the current options is a 'sub option'
-                if (commandOptions[option].isObject) {
-
-                    /*
-                        Handling of object-type options. Currently it's only `placeholders`.
-
-                        Configuration written as:
-                        placeholders: {
-                          name1: 'value1',
-                          name2: 'value2'
-                        }
-
-                        is added to command string as:
-                        -placeholders.name1="value1" -placeholders.name2="value2"
-                     */
-
-                    var parameter = null;
-                    
-                    for(parameter in Object.keys(options[option])) {
-
-                        flywayCommand += Util.format(' -%s.%s="%s"', option, parameter, options[option][parameter]);
-
-                    }
-
-                } 
-                
-                // The current option is a standard option
-                else {
-
-                    flywayCommand += Util.format(' -%s="%s"', option, options[option]);
-
-                }
-
-            } 
-            
-            // An option associated to the Flyway Command entered is not available of not supported by the Flyway Grunt 
-            // Plugin
-            else if (commandOptions[option].required) {
+            if (commandOptions[option].required && !options.hasOwnProperty(option)) {
 
                 grunt.log.error(Util.format('Flyway requires option \'%s\' to be set for command named \'%s\'!',
-                    option,
-                    this.data.command));
+                    option, this.data.command));
 
                 return done(false);
 
             }
-
         }
+        flywayCommand += ' ' + buildCommandParameters(options);
 
         grunt.log.write(flywayCommand);
 
