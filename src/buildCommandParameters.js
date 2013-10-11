@@ -16,7 +16,7 @@ function createParametersDataWithPrefix(parameters, prefix) {
     return Object.keys(parameters).reduce(function (currentResult, key) {
         var value = parameters[key];
 
-        if (typeof value == "object") {
+        if (typeof(value) === "object") {
             var nestedPrefix = prefix + key + ".";
 
             return currentResult.concat(createParametersDataWithPrefix(value, nestedPrefix));
